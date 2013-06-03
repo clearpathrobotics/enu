@@ -46,16 +46,25 @@ class NavSatFixExtended(NavSatFix):
 
 class ENUPublisher:
   def __init__(self):
-    self.datum = None
-    rospy.Subscriber('fix', NavSatFixExtended, self._cb)
-
-    self.enu_pub = rospy.Publisher('enu', Odometry)
-    self.datum_pub = rospy.Publisher('enu_datum', NavSatFixExtended, latch=True)
     self.odometry_msg = Odometry()
     self.odometry_msg.pose.pose.orientation = Quaternion(0,0,0,1)
     self.odometry_msg.pose.covariance[21] = 1000
     self.odometry_msg.pose.covariance[28] = 1000
     self.odometry_msg.pose.covariance[35] = 1000
+
+    rospy.Subscriber('fix', NavSatFixExtended, self._cb)
+    self.enu_pub = rospy.Publisher('enu', Odometry)
+    self.datum_pub = rospy.Publisher('enu_datum', NavSatFix, latch=True)
+
+    try:
+      # If there was a datum parameterized in, use that.
+      self.datum = NavSatFix(rospy.get_param('~datum_latitude', None),
+                             rospy.get_param('~datum_longitude', None),
+                             rospy.get_param('~datum_altitude', None))
+      self.datum_pub.publish(self.datum) 
+    except TypeError:
+      # Otherwise, wait for the first fix.
+      self.datum = None
 
   def _cb(self, fix):
     if not self.datum:
