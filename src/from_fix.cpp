@@ -60,6 +60,7 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
   wgsecef2ned_d(ecef, ecef_datum, ned);
 
   nav_msgs::Odometry odom_msg;
+  odom_msg.header.stamp = fix_ptr->header.stamp;
   odom_msg.pose.pose.position.x = ned[1];
   odom_msg.pose.pose.position.y = ned[0];
   odom_msg.pose.pose.position.z = -ned[2];

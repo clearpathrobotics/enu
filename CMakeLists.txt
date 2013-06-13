@@ -18,7 +18,11 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 include_directories(src/libswiftnav/include)
 
 rosbuild_add_boost_directories()
+
 rosbuild_add_executable(from_fix src/from_fix.cpp)
 target_link_libraries(from_fix swiftnav)
+
+rosbuild_add_executable(to_fix src/to_fix.cpp)
+target_link_libraries(to_fix swiftnav)
 
 add_subdirectory(src/libswiftnav)

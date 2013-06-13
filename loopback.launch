@@ -1,0 +1,8 @@
+<launch>
+  <group ns="gps">
+    <node pkg="enu" type="from_fix" name="from_fix" />
+    <node pkg="enu" type="to_fix" name="to_fix">
+      <remap from="fix" to="fix_out" />
+    </node>
+  </group>
+</launch>
