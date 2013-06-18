@@ -14,9 +14,7 @@ rosbuild_init()
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-# Build the swiftnav library used for coordinate transforms.
 include_directories(src/libswiftnav/include)
-
 rosbuild_add_boost_directories()
 
 rosbuild_add_executable(from_fix src/from_fix.cpp)
@@ -25,4 +23,5 @@ target_link_libraries(from_fix swiftnav)
 rosbuild_add_executable(to_fix src/to_fix.cpp)
 target_link_libraries(to_fix swiftnav)
 
+# Build the swiftnav library used for coordinate transforms.
 add_subdirectory(src/libswiftnav)
