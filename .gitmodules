@@ -1,3 +1,3 @@
 [submodule "src/libswiftnav"]
 	path = src/libswiftnav
-  url = https://bitbucket.org/clearpathrobotics/libswiftnav.git
+  url = https://github.com/swift-nav/libswiftnav.git
