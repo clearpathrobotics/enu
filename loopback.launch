@@ -1,4 +1,6 @@
 <launch>
+  <!-- This is intended to be launched alongside a source of NavSatFix
+       messages, to demonstrate conversion to local frame and back again. -->
   <group ns="gps">
     <node pkg="enu" type="from_fix" name="from_fix" />
     <node pkg="enu" type="to_fix" name="to_fix">
