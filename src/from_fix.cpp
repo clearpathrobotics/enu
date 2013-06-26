@@ -65,7 +65,7 @@ void initialize_datum(double datum_ecef[3],
   sensor_msgs::NavSatFix datum_msg(*fix_ptr);
 
   // Local ENU coordinates are with respect to a plane which is 
-  // prependicular to a particular lat/lon. This logic decides 
+  // perpendicular to a particular lat/lon. This logic decides 
   // whether to use a specific passed-in point (typical for 
   // repeated tests in a locality) or just an arbitrary starting
   // point (more ad-hoc type scenarios).
