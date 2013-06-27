@@ -17,3 +17,5 @@ target_link_libraries(to_fix swiftnav)
 
 # Build the swiftnav library used for coordinate transforms.
 add_subdirectory(src/libswiftnav)
+
+rosbuild_make_distribution(0.0.1)
