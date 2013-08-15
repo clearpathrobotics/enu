@@ -61,7 +61,7 @@ void initialize_datum(double datum_ecef[3],
                       const sensor_msgs::NavSatFixConstPtr fix_ptr,
                       const ros::Publisher& pub_datum)
 {
-  ros::NodeHandle n("~");
+  ros::NodeHandle pnh("~");
   sensor_msgs::NavSatFix datum_msg(*fix_ptr);
 
   // Local ENU coordinates are with respect to a plane which is 
@@ -69,12 +69,12 @@ void initialize_datum(double datum_ecef[3],
   // whether to use a specific passed-in point (typical for 
   // repeated tests in a locality) or just an arbitrary starting
   // point (more ad-hoc type scenarios).
-  if (n.hasParam("datum_latitude") &&
-      n.hasParam("datum_longitude") && 
-      n.hasParam("datum_altitude")) {
-    n.getParam("datum_latitude", datum_msg.latitude);  
-    n.getParam("datum_longitude", datum_msg.longitude);  
-    n.getParam("datum_altitude", datum_msg.altitude);  
+  if (pnh.hasParam("datum_latitude") &&
+      pnh.hasParam("datum_longitude") && 
+      pnh.hasParam("datum_altitude")) {
+    pnh.getParam("datum_latitude", datum_msg.latitude);  
+    pnh.getParam("datum_longitude", datum_msg.longitude);  
+    pnh.getParam("datum_altitude", datum_msg.altitude);  
     ROS_INFO("Using datum provided by node parameters.");
   } else {
     ROS_INFO("Using initial position fix as datum.");
@@ -93,7 +93,8 @@ void initialize_datum(double datum_ecef[3],
 
 static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
                        const ros::Publisher& pub_enu,
-                       const ros::Publisher& pub_datum)
+                       const ros::Publisher& pub_datum,
+                       const std::string& output_tf_frame)
 {
   static double ecef_datum[3];
   static bool have_datum = false;
@@ -118,6 +119,8 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
 
   nav_msgs::Odometry odom_msg;
   odom_msg.header.stamp = fix_ptr->header.stamp;
+  odom_msg.header.frame_id = output_tf_frame; // Name of output tf frame
+  odom_msg.child_frame_id = fix_ptr->header.frame_id; // Antenna location
   odom_msg.pose.pose.position.x = ned[1];
   odom_msg.pose.pose.position.y = ned[0];
   odom_msg.pose.pose.position.z = -ned[2];
@@ -143,13 +146,17 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "from_fix");
   ros::NodeHandle n;
+  ros::NodeHandle pnh("~");
+
+  std::string output_tf_frame;
+  pnh.param<std::string>("output_frame_id", output_tf_frame, "map");
 
   // Initialize publishers, and pass them into the handler for 
   // the subscriber.
   ros::Publisher pub_enu = n.advertise<nav_msgs::Odometry>("enu", 5);
   ros::Publisher pub_datum = n.advertise<sensor_msgs::NavSatFix>("enu_datum", 5, true);
   ros::Subscriber sub = n.subscribe<sensor_msgs::NavSatFix>("fix", 5, 
-      boost::bind(handle_fix, _1, pub_enu, pub_datum));
+      boost::bind(handle_fix, _1, pub_enu, pub_datum, output_tf_frame));
 
   ros::spin();
   return 0;
