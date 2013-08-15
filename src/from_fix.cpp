@@ -129,13 +129,11 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
   odom_msg.pose.covariance[7] = fix_ptr->position_covariance[4];
   odom_msg.pose.covariance[14] = fix_ptr->position_covariance[8];
   
-  // Do not use/trust orientation dimensions from GPS.
-  odom_msg.pose.covariance[21] = 1e6;
-  odom_msg.pose.covariance[28] = 1e6;
-  odom_msg.pose.covariance[35] = 1e6;
-
-  // Orientation of GPS is pointing upward (as far as we know).
-  odom_msg.pose.pose.orientation.w = 1;
+  // Do not use orientation dimensions from GPS.
+  // (-1 is an invalid covariance and standard ROS practice to set as invalid.)
+  odom_msg.pose.covariance[21] = -1;
+  odom_msg.pose.covariance[28] = -1;
+  odom_msg.pose.covariance[35] = -1;
 
   pub_enu.publish(odom_msg); 
 }
