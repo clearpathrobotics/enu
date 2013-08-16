@@ -78,6 +78,7 @@ static void handle_enu(const nav_msgs::OdometryConstPtr odom_ptr,
   // Prepare output Fix message. Copy over timestamp from source message,
   // convert radian latlon output back to degrees.
   sensor_msgs::NavSatFix fix_msg;
+  fix_msg.header.frame_id = odom_ptr->child_frame_id;
   fix_msg.header.stamp = odom_ptr->header.stamp;
   fix_msg.latitude = llh[0] * TO_DEGREES;
   fix_msg.longitude = llh[1] * TO_DEGREES;
