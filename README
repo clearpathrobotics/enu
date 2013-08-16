@@ -1,0 +1,3 @@
+This repo is a ROS package providing transformations back and forth between NavSatFix and popular cartesian representations. It is a light ROS wrapper on libswiftnav.
+
+Please find documentation on the ROS wiki: http://ros.org/wiki/enu
