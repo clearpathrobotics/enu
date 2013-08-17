@@ -59,7 +59,8 @@ extern "C" {
 
 void initialize_datum(double datum_ecef[3],
                       const sensor_msgs::NavSatFixConstPtr fix_ptr,
-                      const ros::Publisher& pub_datum)
+                      const ros::Publisher& pub_datum,
+                      const bool zero_altitude)
 {
   ros::NodeHandle pnh("~");
   sensor_msgs::NavSatFix datum_msg(*fix_ptr);
@@ -87,6 +88,9 @@ void initialize_datum(double datum_ecef[3],
   double llh[3] = { datum_msg.latitude * TO_RADIANS,
                     datum_msg.longitude * TO_RADIANS,
                     datum_msg.altitude };
+  if(zero_altitude){
+    llh[2] = 0.0;
+  }
   wgsllh2ecef(llh, datum_ecef);
 }
 
@@ -95,13 +99,14 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
                        const ros::Publisher& pub_enu,
                        const ros::Publisher& pub_datum,
                        const std::string& output_tf_frame,
+                       const bool zero_altitude,
                        const double invalid_covariance_value)
 {
   static double ecef_datum[3];
   static bool have_datum = false;
 
   if (!have_datum) {
-    initialize_datum(ecef_datum, fix_ptr, pub_datum);
+    initialize_datum(ecef_datum, fix_ptr, pub_datum, zero_altitude);
     have_datum = true;
   }
 
@@ -110,6 +115,9 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
   double llh[3] = { fix_ptr->latitude * TO_RADIANS,
                     fix_ptr->longitude * TO_RADIANS,
                     fix_ptr->altitude };
+  if(zero_altitude){
+    llh[2] = 0.0;
+  }
   double ecef[3];
   wgsllh2ecef(llh, ecef);
   
@@ -125,6 +133,10 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
   odom_msg.pose.pose.position.x = ned[1];
   odom_msg.pose.pose.position.y = ned[0];
   odom_msg.pose.pose.position.z = -ned[2];
+  if(zero_altitude){
+    odom_msg.pose.pose.position.z = 0;
+  }
+  
 
   // We only need to populate the diagonals of the covariance matrix; the
   // rest initialize to zero automatically, which is correct as the
@@ -151,6 +163,8 @@ int main(int argc, char **argv)
 
   std::string output_tf_frame;
   pnh.param<std::string>("output_frame_id", output_tf_frame, "map");
+  bool zero_altitude;
+  pnh.param<bool>("zero_altitude", zero_altitude, false);
   double invalid_covariance_value;
   pnh.param<double>("invalid_covariance_value", invalid_covariance_value, -1.0); // -1 is ROS convention.  1e6 is robot_pose_ekf convention
 
@@ -159,7 +173,7 @@ int main(int argc, char **argv)
   ros::Publisher pub_enu = n.advertise<nav_msgs::Odometry>("enu", 5);
   ros::Publisher pub_datum = n.advertise<sensor_msgs::NavSatFix>("enu_datum", 5, true);
   ros::Subscriber sub = n.subscribe<sensor_msgs::NavSatFix>("fix", 5, 
-      boost::bind(handle_fix, _1, pub_enu, pub_datum, output_tf_frame, invalid_covariance_value));
+  boost::bind(handle_fix, _1, pub_enu, pub_datum, output_tf_frame, zero_altitude, invalid_covariance_value));
 
   ros::spin();
   return 0;
