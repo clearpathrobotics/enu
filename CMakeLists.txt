@@ -7,7 +7,6 @@ catkin_package(
   INCLUDE_DIRS src/libswiftnav/include
   LIBRARIES swiftnav
   CATKIN_DEPENDS rosconsole roscpp geometry_msgs sensor_msgs nav_msgs
-  DEPENDS
 )
 
 ###########
@@ -25,18 +24,18 @@ add_subdirectory(src/libswiftnav)
 #add_dependencies(GraftOdometryTopic ${PROJECT_NAME}_gencpp)
 
 ## Declare cpp executable
-add_executable(from_fix src/from_fix.cpp)
-target_link_libraries(from_fix swiftnav ${catkin_LIBRARIES})
+add_executable(enu_from_fix src/from_fix.cpp)
+target_link_libraries(enu_from_fix swiftnav ${catkin_LIBRARIES})
 
-add_executable(to_fix src/to_fix.cpp)
-target_link_libraries(to_fix swiftnav ${catkin_LIBRARIES})
+add_executable(enu_to_fix src/to_fix.cpp)
+target_link_libraries(enu_to_fix swiftnav ${catkin_LIBRARIES})
 
 #############
 ## Install ##
 #############
 
 # Mark executables and/or libraries for installation
-install(TARGETS from_fix to_fix
+install(TARGETS enu_from_fix enu_to_fix
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
