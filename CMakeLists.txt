@@ -26,9 +26,11 @@ add_subdirectory(src/libswiftnav)
 ## Declare cpp executable
 add_executable(enu_from_fix src/from_fix.cpp)
 target_link_libraries(enu_from_fix swiftnav ${catkin_LIBRARIES})
+set_target_properties(enu_from_fix PROPERTIES OUTPUT_NAME from_fix PREFIX "")
 
 add_executable(enu_to_fix src/to_fix.cpp)
 target_link_libraries(enu_to_fix swiftnav ${catkin_LIBRARIES})
+set_target_properties(enu_to_fix PROPERTIES OUTPUT_NAME to_fix PREFIX "")
 
 #############
 ## Install ##
@@ -36,7 +38,5 @@ target_link_libraries(enu_to_fix swiftnav ${catkin_LIBRARIES})
 
 # Mark executables and/or libraries for installation
 install(TARGETS enu_from_fix enu_to_fix
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
