@@ -51,21 +51,26 @@ extern "C" {
 #define TO_RADIANS (M_PI/180)
 #define TO_DEGREES (180/M_PI)
 
-void llh_to_ecef(const sensor_msgs::NavSatFixConstPtr llh_ptr, double ecef[3]) {
+void llh_to_ecef(const sensor_msgs::NavSatFix& llh_ptr, double ecef[3]) {
   // The datum point is stored as an ECEF, for mathematical reasons.
   // We convert it here, using the appropriate function from
   // libswiftnav.
-  double llh_array[3] = { llh_ptr->latitude * TO_RADIANS,
-                          llh_ptr->longitude * TO_RADIANS,
-                          llh_ptr->altitude };
-  wgsllh2ecef(llh_array, ecef);
+  double llh_raw[3] = { llh_ptr.latitude * TO_RADIANS,
+                        llh_ptr.longitude * TO_RADIANS,
+                        llh_ptr.altitude };
+  wgsllh2ecef(llh_raw, ecef);
 }
 
-nav_msgs::Odometry llh_to_enu(sensor_msgs::NavSatFixConstPtr fix_ptr,
-                              double ecef_datum[3],
-                              const std::string& output_tf_frame,
-                              double invalid_covariance_value)
+void llh_to_enu(const sensor_msgs::NavSatFixConstPtr fix_ptr,
+                const sensor_msgs::NavSatFix& datum,
+                const std::string& output_tf_frame,
+                double invalid_covariance_value,
+                nav_msgs::Odometry& enu) 
 {
+  // Convert reference LLH-formatted datum to ECEF format
+  double ecef_datum[3];
+  llh_to_ecef(datum, ecef_datum); 
+
   // Prepare the appropriate input vector to convert the input latlon
   // to an ECEF triplet.
   double llh[3] = { fix_ptr->latitude * TO_RADIANS,
@@ -79,34 +84,36 @@ nav_msgs::Odometry llh_to_enu(sensor_msgs::NavSatFixConstPtr fix_ptr,
   double ned[3];
   wgsecef2ned_d(ecef, ecef_datum, ned);
 
-  nav_msgs::Odometry odom_msg;
-  odom_msg.header.stamp = fix_ptr->header.stamp;
-  odom_msg.header.frame_id = output_tf_frame; // Name of output tf frame
-  odom_msg.child_frame_id = fix_ptr->header.frame_id; // Antenna location
-  odom_msg.pose.pose.position.x = ned[1];
-  odom_msg.pose.pose.position.y = ned[0];
-  odom_msg.pose.pose.position.z = -ned[2];
+  // Output data
+  enu.header.stamp = fix_ptr->header.stamp;
+  enu.header.frame_id = output_tf_frame; // Name of output tf frame
+  enu.child_frame_id = fix_ptr->header.frame_id; // Antenna location
+  enu.pose.pose.position.x = ned[1];
+  enu.pose.pose.position.y = ned[0];
+  enu.pose.pose.position.z = -ned[2];
 
   // We only need to populate the diagonals of the covariance matrix; the
   // rest initialize to zero automatically, which is correct as the
   // dimensions of the state are independent.
-  odom_msg.pose.covariance[0] = fix_ptr->position_covariance[0];
-  odom_msg.pose.covariance[7] = fix_ptr->position_covariance[4];
-  odom_msg.pose.covariance[14] = fix_ptr->position_covariance[8];
+  enu.pose.covariance[0] = fix_ptr->position_covariance[0];
+  enu.pose.covariance[7] = fix_ptr->position_covariance[4];
+  enu.pose.covariance[14] = fix_ptr->position_covariance[8];
   
   // Do not use orientation dimensions from GPS.
   // (-1 is an invalid covariance and standard ROS practice to set as invalid.)
-  odom_msg.pose.covariance[21] = invalid_covariance_value;
-  odom_msg.pose.covariance[28] = invalid_covariance_value;
-  odom_msg.pose.covariance[35] = invalid_covariance_value;
-
-  return odom_msg;
-
+  enu.pose.covariance[21] = invalid_covariance_value;
+  enu.pose.covariance[28] = invalid_covariance_value;
+  enu.pose.covariance[35] = invalid_covariance_value;
 }
 
-sensor_msgs::NavSatFix enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
-                                  const double ecef_datum[3])
+void enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
+                const sensor_msgs::NavSatFix& datum,
+                sensor_msgs::NavSatFix& llh)
 {
+  // Convert reference LLH-formatted datum to ECEF format
+  double ecef_datum[3];
+  llh_to_ecef(datum, ecef_datum); 
+
   // Prepare NED vector from ENU coordinates, perform conversion in libswiftnav
   // library calls.
   double ned[3] = { odom_ptr->pose.pose.position.y,
@@ -116,24 +123,21 @@ sensor_msgs::NavSatFix enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
   double ecef[3];
   wgsned2ecef_d(ned, ecef_datum, ecef);
   
-  double llh[3];
-  wgsecef2llh(ecef, llh);
+  double llh_raw[3];
+  wgsecef2llh(ecef, llh_raw);
 
-  // Prepare output Fix message. Copy over timestamp from source message,
+  // Output Fix message. Copy over timestamp from source message,
   // convert radian latlon output back to degrees.
-  sensor_msgs::NavSatFix fix_msg;
-  fix_msg.header.frame_id = odom_ptr->child_frame_id;
-  fix_msg.header.stamp = odom_ptr->header.stamp;
-  fix_msg.latitude = llh[0] * TO_DEGREES;
-  fix_msg.longitude = llh[1] * TO_DEGREES;
-  fix_msg.altitude = llh[2];
+  llh.header.frame_id = odom_ptr->child_frame_id;
+  llh.header.stamp = odom_ptr->header.stamp;
+  llh.latitude = llh_raw[0] * TO_DEGREES;
+  llh.longitude = llh_raw[1] * TO_DEGREES;
+  llh.altitude = llh_raw[2];
 
   // We only need to populate the diagonals of the covariance matrix; the
   // rest initialize to zero automatically, which is correct as the
   // dimensions of the state are independent.
-  fix_msg.position_covariance[0] = odom_ptr->pose.covariance[0];
-  fix_msg.position_covariance[4] = odom_ptr->pose.covariance[7];
-  fix_msg.position_covariance[8] = odom_ptr->pose.covariance[14];
-
-  return fix_msg;
+  llh.position_covariance[0] = odom_ptr->pose.covariance[0];
+  llh.position_covariance[4] = odom_ptr->pose.covariance[7];
+  llh.position_covariance[8] = odom_ptr->pose.covariance[14];
 }

@@ -46,34 +46,35 @@
  * \param [out] ecef[3] ECEF array, in metres
  * \return N/A 
  */
-void llh_to_ecef(const sensor_msgs::NavSatFixConstPtr llh_ptr, double ecef[3]);
+void llh_to_ecef(const sensor_msgs::NavSatFix& llh_ptr, double ecef[3]);
 
 /*
  * Converts an LLH coordinate into the corresponding ENU coordinate, when also
  * given a datum (in ECEF format). Use llh_to_ecef to determine the datum.
- * TODO: Should we work in LLH only and make ECEF invisible? (rgariepy, 30 Aug 2013)
  * \param [in] fix_ptr NavSatFix with a valid latitude, longitude, and altitude
  * representing the current position
- * \param [in] ecef_datum[3] ECEF array representing the datum point
+ * \param [in] Datum point in LLH format
  * \param [in] output_tf_frame The string to be used as the frame_id in the output
  * \param [in] invalid_covariance_value The value which represents invalid covariances
  * TODO: Deprecate invalid_covariance_value when it's fully standardized across ROS (rgariepy, 30 Aug 2013)
- * \return ENU of current position relative to datum
+ * \param [out] ENU of current position relative to datum
  */
-nav_msgs::Odometry llh_to_enu(sensor_msgs::NavSatFixConstPtr fix_ptr,
-                              double ecef_datum[3],
-                              const std::string& output_tf_frame,
-                              double invalid_covariance_value);
+void llh_to_enu(const sensor_msgs::NavSatFixConstPtr fix_ptr,
+                const sensor_msgs::NavSatFix& datum,
+                const std::string& output_tf_frame,
+                double invalid_covariance_value,
+                nav_msgs::Odometry& enu);                 
 
 /*
  * Converts an ENU coordinate into the corresponding LLH coordinate, when also
  * given a datum (in ECEF format). Use llh_to_ecef to determine the datum.
  * TODO: Should we work in LLH only and make ECEF invisible? (rgariepy, 30 Aug 2013)
- * \param [in] odom_ptr ENU position with respect to datum point
- * \param [in] ecef_datum[3] ECEF array representing the datum point
- * \return LLH corresponding to ENU + datum combination
+ * \param [in] Odom_ptr ENU position with respect to datum point
+ * \param [in] Datum point in LLH format
+ * \param [out] LLH corresponding to ENU + datum combination
  */
-sensor_msgs::NavSatFix enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
-                                  const double ecef_datum[3]);
+void enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
+                const sensor_msgs::NavSatFix& datum,
+                sensor_msgs::NavSatFix& llh);
 
 #endif  // INCLUDE_ENU_ROS_H_

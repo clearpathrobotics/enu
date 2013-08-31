@@ -51,12 +51,11 @@
 
 #include "enu/enu_ros.h"  // ROS wrapper for libswiftnav
 
-void initialize_datum(double datum_ecef[3],
-                      const sensor_msgs::NavSatFixConstPtr fix_ptr,
-                      const ros::Publisher& pub_datum)
+void initialize_datum(const sensor_msgs::NavSatFixConstPtr fix_ptr,
+                      const ros::Publisher& pub_datum,
+                      sensor_msgs::NavSatFix& datum_ptr)
 {
   ros::NodeHandle pnh("~");
-  sensor_msgs::NavSatFix datum_msg(*fix_ptr);
 
   // Local ENU coordinates are with respect to a plane which is 
   // perpendicular to a particular lat/lon. This logic decides 
@@ -66,18 +65,17 @@ void initialize_datum(double datum_ecef[3],
   if (pnh.hasParam("datum_latitude") &&
       pnh.hasParam("datum_longitude") && 
       pnh.hasParam("datum_altitude")) {
-    pnh.getParam("datum_latitude", datum_msg.latitude);  
-    pnh.getParam("datum_longitude", datum_msg.longitude);  
-    pnh.getParam("datum_altitude", datum_msg.altitude);  
+    pnh.getParam("datum_latitude", datum_ptr.latitude);  
+    pnh.getParam("datum_longitude", datum_ptr.longitude);  
+    pnh.getParam("datum_altitude", datum_ptr.altitude);  
     ROS_INFO("Using datum provided by node parameters.");
   } else {
+    datum_ptr.latitude = fix_ptr->latitude;
+    datum_ptr.longitude = fix_ptr->longitude;
+    datum_ptr.altitude = fix_ptr->altitude;
     ROS_INFO("Using initial position fix as datum.");
-  }
-  pub_datum.publish(datum_msg);
-
-  // The datum point is stored as an ECEF, for mathematical reasons.
-  // We convert latlon to ECEF here
-  llh_to_ecef(fix_ptr, datum_ecef);
+  } 
+  pub_datum.publish(datum_ptr);
 }
 
 
@@ -87,19 +85,19 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
                        const std::string& output_tf_frame,
                        const double invalid_covariance_value)
 {
-
-  static double ecef_datum[3];
+  static sensor_msgs::NavSatFix datum_ptr;
   static bool have_datum = false;
 
   if (!have_datum) {
-    initialize_datum(ecef_datum, fix_ptr, pub_datum);
+    initialize_datum(fix_ptr, pub_datum, datum_ptr);
     have_datum = true;
   }
 
   // Convert the input latlon into north-east-down (NED) via an ECEF 
   // transformation and an ECEF-formatted datum point
-  nav_msgs::Odometry odom_msg = llh_to_enu(fix_ptr, ecef_datum, 
-          output_tf_frame, invalid_covariance_value);
+  nav_msgs::Odometry odom_msg;
+  llh_to_enu(fix_ptr, datum_ptr, output_tf_frame, invalid_covariance_value,
+             odom_msg);
 
   pub_enu.publish(odom_msg); 
 }

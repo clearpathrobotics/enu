@@ -53,13 +53,14 @@
 #include "enu/enu_ros.h"
 
 static void handle_enu(const nav_msgs::OdometryConstPtr odom_ptr,
-                       const double ecef_datum[3],
+                       const sensor_msgs::NavSatFix& datum,
                        const ros::Publisher& pub_fix)
 {
   // Prepare LLH from ENU coordinates, perform conversion
   // using predefined datum
   // Use input message frame_id and timestamp in output fix message
-  sensor_msgs::NavSatFix fix_msg = enu_to_llh(odom_ptr, ecef_datum);
+  sensor_msgs::NavSatFix fix_msg;
+  enu_to_llh(odom_ptr, datum, fix_msg);
 
   pub_fix.publish(fix_msg); 
 }
@@ -68,15 +69,12 @@ static void handle_enu(const nav_msgs::OdometryConstPtr odom_ptr,
 static void handle_datum(const sensor_msgs::NavSatFixConstPtr datum_ptr,
                          ros::NodeHandle& n)
 {
-  // Convert received datum to ECEF 
-  static double ecef_datum[3];
-  llh_to_ecef(datum_ptr, ecef_datum);
-
   // Pass datum into the data subscriber. Subscriber, Publisher, and the datum
   // array are static, so that they stick around when this function has exited.
+  static sensor_msgs::NavSatFix datum(*datum_ptr);
   static ros::Publisher pub_fix = n.advertise<sensor_msgs::NavSatFix>("fix", 5);
   static ros::Subscriber sub_enu = n.subscribe<nav_msgs::Odometry>("enu", 5, 
-      boost::bind(handle_enu, _1, ecef_datum, boost::ref(pub_fix)));
+      boost::bind(handle_enu, _1, datum, boost::ref(pub_fix)));
 }
 
 
