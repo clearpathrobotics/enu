@@ -51,9 +51,6 @@
 
 #include "enu/swiftnav.h"  // ROS wrapper for libswiftnav
 
-#define TO_RADIANS (M_PI/180)
-#define TO_DEGREES (180/M_PI)
-
 void initialize_datum(double datum_ecef[3],
                       const sensor_msgs::NavSatFixConstPtr fix_ptr,
                       const ros::Publisher& pub_datum)
@@ -79,9 +76,9 @@ void initialize_datum(double datum_ecef[3],
   pub_datum.publish(datum_msg);
 
   // The datum point is stored as an ECEF, for mathematical reasons.
-  // We convert it here, using the appropriate function from
+  // We convert latlon to ECEF here, using the appropriate function from
   // swiftnav.
-  llh_to_ecef(datum_msg, datum_ecef);
+  llh_to_ecef(fix_ptr, datum_ecef);
 }
 
 

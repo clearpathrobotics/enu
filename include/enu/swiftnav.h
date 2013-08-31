@@ -48,11 +48,14 @@
 #include "sensor_msgs/NavSatFix.h"
 #include "nav_msgs/Odometry.h"
 
-void llh_to_ecef(sensor_msgs::NavSatFix llh, double ecef[3]);
+void llh_to_ecef(const sensor_msgs::NavSatFixConstPtr llh_ptr, double ecef[3]);
 
 nav_msgs::Odometry llh_to_enu(sensor_msgs::NavSatFixConstPtr fix_ptr,
                               double ecef_datum[3],
                               const std::string& output_tf_frame,
                               double invalid_covariance_value);
+
+sensor_msgs::NavSatFix enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
+                                  const double ecef_datum[3]);
 
 #endif  // INCLUDE_ENU_SWIFTNAV_H_

@@ -59,13 +59,13 @@ extern "C" {
 #define TO_RADIANS (M_PI/180)
 #define TO_DEGREES (180/M_PI)
 
-void llh_to_ecef(sensor_msgs::NavSatFix llh, double ecef[3]) {
+void llh_to_ecef(const sensor_msgs::NavSatFixConstPtr llh_ptr, double ecef[3]) {
   // The datum point is stored as an ECEF, for mathematical reasons.
   // We convert it here, using the appropriate function from
   // libswiftnav.
-  double llh_array[3] = { llh.latitude * TO_RADIANS,
-                          llh.longitude * TO_RADIANS,
-                          llh.altitude };
+  double llh_array[3] = { llh_ptr->latitude * TO_RADIANS,
+                          llh_ptr->longitude * TO_RADIANS,
+                          llh_ptr->altitude };
   wgsllh2ecef(llh_array, ecef);
 }
 
@@ -111,4 +111,38 @@ nav_msgs::Odometry llh_to_enu(sensor_msgs::NavSatFixConstPtr fix_ptr,
 
   return odom_msg;
 
+}
+
+sensor_msgs::NavSatFix enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
+                                  const double ecef_datum[3])
+{
+  // Prepare NED vector from ENU coordinates, perform conversion in libswiftnav
+  // library calls.
+  double ned[3] = { odom_ptr->pose.pose.position.y,
+                    odom_ptr->pose.pose.position.x
+                    -odom_ptr->pose.pose.position.z };
+
+  double ecef[3];
+  wgsned2ecef_d(ned, ecef_datum, ecef);
+  
+  double llh[3];
+  wgsecef2llh(ecef, llh);
+
+  // Prepare output Fix message. Copy over timestamp from source message,
+  // convert radian latlon output back to degrees.
+  sensor_msgs::NavSatFix fix_msg;
+  fix_msg.header.frame_id = odom_ptr->child_frame_id;
+  fix_msg.header.stamp = odom_ptr->header.stamp;
+  fix_msg.latitude = llh[0] * TO_DEGREES;
+  fix_msg.longitude = llh[1] * TO_DEGREES;
+  fix_msg.altitude = llh[2];
+
+  // We only need to populate the diagonals of the covariance matrix; the
+  // rest initialize to zero automatically, which is correct as the
+  // dimensions of the state are independent.
+  fix_msg.position_covariance[0] = odom_ptr->pose.covariance[0];
+  fix_msg.position_covariance[4] = odom_ptr->pose.covariance[7];
+  fix_msg.position_covariance[8] = odom_ptr->pose.covariance[14];
+
+  return fix_msg;
 }

@@ -29,7 +29,7 @@ target_link_libraries(enu_from_fix enu_swiftnav swiftnav ${catkin_LIBRARIES})
 set_target_properties(enu_from_fix PROPERTIES OUTPUT_NAME from_fix PREFIX "")
 
 add_executable(enu_to_fix src/to_fix.cpp)
-target_link_libraries(enu_to_fix swiftnav ${catkin_LIBRARIES})
+target_link_libraries(enu_to_fix enu_swiftnav swiftnav ${catkin_LIBRARIES})
 set_target_properties(enu_to_fix PROPERTIES OUTPUT_NAME to_fix PREFIX "")
 
 #############
