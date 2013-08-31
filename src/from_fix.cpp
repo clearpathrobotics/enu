@@ -49,10 +49,7 @@
 
 #include <boost/bind.hpp>
 
-extern "C" {
-  // The backend of this node is an included C library called libswiftnav.
-  #include "coord_system.h"
-}
+#include "enu/swiftnav.h"  // ROS wrapper for libswiftnav
 
 #define TO_RADIANS (M_PI/180)
 #define TO_DEGREES (180/M_PI)
@@ -83,11 +80,8 @@ void initialize_datum(double datum_ecef[3],
 
   // The datum point is stored as an ECEF, for mathematical reasons.
   // We convert it here, using the appropriate function from
-  // libswiftnav.
-  double llh[3] = { datum_msg.latitude * TO_RADIANS,
-                    datum_msg.longitude * TO_RADIANS,
-                    datum_msg.altitude };
-  wgsllh2ecef(llh, datum_ecef);
+  // swiftnav.
+  llh_to_ecef(datum_msg, datum_ecef);
 }
 
 
@@ -97,6 +91,7 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
                        const std::string& output_tf_frame,
                        const double invalid_covariance_value)
 {
+
   static double ecef_datum[3];
   static bool have_datum = false;
 
@@ -105,39 +100,10 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
     have_datum = true;
   }
 
-  // Prepare the appropriate input vector to convert the input latlon
-  // to an ECEF triplet.
-  double llh[3] = { fix_ptr->latitude * TO_RADIANS,
-                    fix_ptr->longitude * TO_RADIANS,
-                    fix_ptr->altitude };
-  double ecef[3];
-  wgsllh2ecef(llh, ecef);
-  
-  // ECEF triplet is converted to north-east-down (NED), by combining it
-  // with the ECEF-formatted datum point.
-  double ned[3];
-  wgsecef2ned_d(ecef, ecef_datum, ned);
-
-  nav_msgs::Odometry odom_msg;
-  odom_msg.header.stamp = fix_ptr->header.stamp;
-  odom_msg.header.frame_id = output_tf_frame; // Name of output tf frame
-  odom_msg.child_frame_id = fix_ptr->header.frame_id; // Antenna location
-  odom_msg.pose.pose.position.x = ned[1];
-  odom_msg.pose.pose.position.y = ned[0];
-  odom_msg.pose.pose.position.z = -ned[2];
-
-  // We only need to populate the diagonals of the covariance matrix; the
-  // rest initialize to zero automatically, which is correct as the
-  // dimensions of the state are independent.
-  odom_msg.pose.covariance[0] = fix_ptr->position_covariance[0];
-  odom_msg.pose.covariance[7] = fix_ptr->position_covariance[4];
-  odom_msg.pose.covariance[14] = fix_ptr->position_covariance[8];
-  
-  // Do not use orientation dimensions from GPS.
-  // (-1 is an invalid covariance and standard ROS practice to set as invalid.)
-  odom_msg.pose.covariance[21] = invalid_covariance_value;
-  odom_msg.pose.covariance[28] = invalid_covariance_value;
-  odom_msg.pose.covariance[35] = invalid_covariance_value;
+  // Convert the input latlon into north-east-down (NED) via an ECEF 
+  // transformation and an ECEF-formatted datum point
+  nav_msgs::Odometry odom_msg = llh_to_enu(fix_ptr, ecef_datum, 
+          output_tf_frame, invalid_covariance_value);
 
   pub_enu.publish(odom_msg); 
 }
