@@ -17,13 +17,14 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <url type="website">http://ros.org/wiki/enu</url>
-  <url type="bugtracker">https://github.com/chadrockey/graft/issues</url>
+  <url type="bugtracker">https://github.com/clearpathrobotics/enu/issues</url>
   <url type="repository">https://github.com/clearpathrobotics/enu</url>
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
   <!-- Authors do not have to be maintianers, but could be -->
   <author email="mpurvis@clearpathrobotics.com">Mike Purvis</author>
+  <author email="rgariepy@clearpathrobotics.com">Ryan Gariepy</author>
 
 
   <!-- The *_depend tags are used to specify dependencies -->

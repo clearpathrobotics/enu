@@ -37,16 +37,17 @@
 
 #include "enu/enu_ros.h"
 
-#include "ros/ros.h"
-#include "sensor_msgs/NavSatFix.h"
-#include "nav_msgs/Odometry.h"
-
 #include <boost/bind.hpp>
+#include <string>
 
 extern "C" {
   // The backend of this node is an included C library called libswiftnav.
-  #include "coord_system.h"
+  #include "libswiftnav/include/coord_system.h"
 }
+
+#include "ros/ros.h"
+#include "sensor_msgs/NavSatFix.h"
+#include "nav_msgs/Odometry.h"
 
 #define TO_RADIANS (M_PI/180)
 #define TO_DEGREES (180/M_PI)
@@ -65,11 +66,10 @@ void llh_to_enu(const sensor_msgs::NavSatFixConstPtr fix_ptr,
                 const sensor_msgs::NavSatFix& datum,
                 const std::string& output_tf_frame,
                 double invalid_covariance_value,
-                nav_msgs::Odometry& enu) 
-{
+                nav_msgs::Odometry& enu) {
   // Convert reference LLH-formatted datum to ECEF format
   double ecef_datum[3];
-  llh_to_ecef(datum, ecef_datum); 
+  llh_to_ecef(datum, ecef_datum);
 
   // Prepare the appropriate input vector to convert the input latlon
   // to an ECEF triplet.
@@ -78,7 +78,7 @@ void llh_to_enu(const sensor_msgs::NavSatFixConstPtr fix_ptr,
                     fix_ptr->altitude };
   double ecef[3];
   wgsllh2ecef(llh, ecef);
-  
+
   // ECEF triplet is converted to north-east-down (NED), by combining it
   // with the ECEF-formatted datum point.
   double ned[3];
@@ -86,8 +86,8 @@ void llh_to_enu(const sensor_msgs::NavSatFixConstPtr fix_ptr,
 
   // Output data
   enu.header.stamp = fix_ptr->header.stamp;
-  enu.header.frame_id = output_tf_frame; // Name of output tf frame
-  enu.child_frame_id = fix_ptr->header.frame_id; // Antenna location
+  enu.header.frame_id = output_tf_frame;  // Name of output tf frame
+  enu.child_frame_id = fix_ptr->header.frame_id;  // Antenna location
   enu.pose.pose.position.x = ned[1];
   enu.pose.pose.position.y = ned[0];
   enu.pose.pose.position.z = -ned[2];
@@ -98,7 +98,7 @@ void llh_to_enu(const sensor_msgs::NavSatFixConstPtr fix_ptr,
   enu.pose.covariance[0] = fix_ptr->position_covariance[0];
   enu.pose.covariance[7] = fix_ptr->position_covariance[4];
   enu.pose.covariance[14] = fix_ptr->position_covariance[8];
-  
+
   // Do not use orientation dimensions from GPS.
   // (-1 is an invalid covariance and standard ROS practice to set as invalid.)
   enu.pose.covariance[21] = invalid_covariance_value;
@@ -108,11 +108,10 @@ void llh_to_enu(const sensor_msgs::NavSatFixConstPtr fix_ptr,
 
 void enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
                 const sensor_msgs::NavSatFix& datum,
-                sensor_msgs::NavSatFix& llh)
-{
+                sensor_msgs::NavSatFix& llh) {
   // Convert reference LLH-formatted datum to ECEF format
   double ecef_datum[3];
-  llh_to_ecef(datum, ecef_datum); 
+  llh_to_ecef(datum, ecef_datum);
 
   // Prepare NED vector from ENU coordinates, perform conversion in libswiftnav
   // library calls.
@@ -122,7 +121,7 @@ void enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
 
   double ecef[3];
   wgsned2ecef_d(ned, ecef_datum, ecef);
-  
+
   double llh_raw[3];
   wgsecef2llh(ecef, llh_raw);
 

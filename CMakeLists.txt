@@ -41,3 +41,15 @@ set_target_properties(enu_to_fix PROPERTIES OUTPUT_NAME to_fix PREFIX "")
 install(TARGETS enu_from_fix enu_to_fix
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+##########
+## Docs ##
+##########
+
+add_custom_target (${PROJECT_NAME}_doc 
+  rosdoc_lite -o ${CATKIN_DEVEL_PREFIX}/doc/${PROJECT_NAME} ${CATKIN_DEVEL_PREFIX}/../src/${PROJECT_NAME}
+)
+
+FILE(GLOB LINT_SRCS src/*.cpp include/enu/*.h)
+add_custom_target(${PROJECT_NAME}_cpplint
+  COMMAND cpplint --filter=-whitespace/line_length ${LINT_SRCS})
