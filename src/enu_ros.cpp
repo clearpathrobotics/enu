@@ -35,7 +35,7 @@
  *
  */
 
-#include "enu/swiftnav.h"
+#include "enu/enu_ros.h"
 
 #include "ros/ros.h"
 #include "sensor_msgs/NavSatFix.h"

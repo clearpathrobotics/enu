@@ -50,13 +50,13 @@
 
 #include <boost/bind.hpp>
 
-#include "enu/swiftnav.h"
+#include "enu/enu_ros.h"
 
 static void handle_enu(const nav_msgs::OdometryConstPtr odom_ptr,
                        const double ecef_datum[3],
                        const ros::Publisher& pub_fix)
 {
-  // Prepare LLH from ENU coordinates, perform conversion in swiftnav
+  // Prepare LLH from ENU coordinates, perform conversion
   // using predefined datum
   // Use input message frame_id and timestamp in output fix message
   sensor_msgs::NavSatFix fix_msg = enu_to_llh(odom_ptr, ecef_datum);

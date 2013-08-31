@@ -35,7 +35,7 @@
  *
  */
 
-#ifndef INCLUDE_ENU_SWIFTNAV_H_
+#ifndef INCLUDE_ENU_ROS_H_
 
 #include "sensor_msgs/NavSatFix.h"
 #include "nav_msgs/Odometry.h"
@@ -76,4 +76,4 @@ nav_msgs::Odometry llh_to_enu(sensor_msgs::NavSatFixConstPtr fix_ptr,
 sensor_msgs::NavSatFix enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
                                   const double ecef_datum[3]);
 
-#endif  // INCLUDE_ENU_SWIFTNAV_H_
+#endif  // INCLUDE_ENU_ROS_H_

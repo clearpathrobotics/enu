@@ -49,7 +49,7 @@
 
 #include <boost/bind.hpp>
 
-#include "enu/swiftnav.h"  // ROS wrapper for libswiftnav
+#include "enu/enu_ros.h"  // ROS wrapper for libswiftnav
 
 void initialize_datum(double datum_ecef[3],
                       const sensor_msgs::NavSatFixConstPtr fix_ptr,
@@ -76,8 +76,7 @@ void initialize_datum(double datum_ecef[3],
   pub_datum.publish(datum_msg);
 
   // The datum point is stored as an ECEF, for mathematical reasons.
-  // We convert latlon to ECEF here, using the appropriate function from
-  // swiftnav.
+  // We convert latlon to ECEF here
   llh_to_ecef(fix_ptr, datum_ecef);
 }
 
