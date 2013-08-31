@@ -1,20 +1,12 @@
 /**
- *      _____
- *     /  _  \
- *    / _/ \  \
- *   / / \_/   \
- *  /  \_/  _   \  ___  _    ___   ___   ____   ____   ___   _____  _   _
- *  \  / \_/ \  / /  _\| |  | __| / _ \ | ++ \ | ++ \ / _ \ |_   _|| | | |
- *   \ \_/ \_/ /  | |  | |  | ++ | |_| || ++ / | ++_/| |_| |  | |  | +-+ |
- *    \  \_/  /   | |_ | |_ | ++ |  _  || |\ \ | |   |  _  |  | |  | +-+ |
- *     \_____/    \___/|___||___||_| |_||_| \_\|_|   |_| |_|  |_|  |_| |_|
- *             ROBOTICS
- *`
- *  File: swiftnav.h
- *  Desc: Function definitions for to-fix and from-fix wrapper library
- *  Auth: Ryan Gariepy
  *
- *  Copyright (c) 2013, Clearpath Robotics, Inc. 
+ *  \file
+ *  \brief Functions for conversion between LLH and ENU coordinates
+ *         (given a defined datum) and LLH->ECEF (for datum generation)
+ *  \author Ryan Gariepy <rgariepy@clearpathrobotics.com>         
+ *
+ *  \copyright Copyright (c) 2013, Clearpath Robotics, Inc. 
+ *
  *  All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +31,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
- * Please send comments, questions, or patches to skynet@clearpathrobotics.com 
+ * Please send comments, questions, or patches to code@clearpathrobotics.com 
  *
  */
 
@@ -48,13 +40,39 @@
 #include "sensor_msgs/NavSatFix.h"
 #include "nav_msgs/Odometry.h"
 
+/*
+ * Converts an LLH coordinate into the corresponding ECEF coordinate. Primarily intended for datum generation for LLH<->ENU conversion. 
+ * \param [in] llh_ptr NavSatFix with a valid latitude, longitude, and altitude
+ * \param [out] ecef[3] ECEF array, in metres
+ * \return N/A 
+ */
 void llh_to_ecef(const sensor_msgs::NavSatFixConstPtr llh_ptr, double ecef[3]);
 
+/*
+ * Converts an LLH coordinate into the corresponding ENU coordinate, when also
+ * given a datum (in ECEF format). Use llh_to_ecef to determine the datum.
+ * TODO: Should we work in LLH only and make ECEF invisible? (rgariepy, 30 Aug 2013)
+ * \param [in] fix_ptr NavSatFix with a valid latitude, longitude, and altitude
+ * representing the current position
+ * \param [in] ecef_datum[3] ECEF array representing the datum point
+ * \param [in] output_tf_frame The string to be used as the frame_id in the output
+ * \param [in] invalid_covariance_value The value which represents invalid covariances
+ * TODO: Deprecate invalid_covariance_value when it's fully standardized across ROS (rgariepy, 30 Aug 2013)
+ * \return ENU of current position relative to datum
+ */
 nav_msgs::Odometry llh_to_enu(sensor_msgs::NavSatFixConstPtr fix_ptr,
                               double ecef_datum[3],
                               const std::string& output_tf_frame,
                               double invalid_covariance_value);
 
+/*
+ * Converts an ENU coordinate into the corresponding LLH coordinate, when also
+ * given a datum (in ECEF format). Use llh_to_ecef to determine the datum.
+ * TODO: Should we work in LLH only and make ECEF invisible? (rgariepy, 30 Aug 2013)
+ * \param [in] odom_ptr ENU position with respect to datum point
+ * \param [in] ecef_datum[3] ECEF array representing the datum point
+ * \return LLH corresponding to ENU + datum combination
+ */
 sensor_msgs::NavSatFix enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
                                   const double ecef_datum[3]);
 

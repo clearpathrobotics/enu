@@ -1,20 +1,12 @@
 /**
- *      _____
- *     /  _  \
- *    / _/ \  \
- *   / / \_/   \
- *  /  \_/  _   \  ___  _    ___   ___   ____   ____   ___   _____  _   _
- *  \  / \_/ \  / /  _\| |  | __| / _ \ | ++ \ | ++ \ / _ \ |_   _|| | | |
- *   \ \_/ \_/ /  | |  | |  | ++ | |_| || ++ / | ++_/| |_| |  | |  | +-+ |
- *    \  \_/  /   | |_ | |_ | ++ |  _  || |\ \ | |   |  _  |  | |  | +-+ |
- *     \_____/    \___/|___||___||_| |_||_| \_\|_|   |_| |_|  |_|  |_| |_|
- *             ROBOTICS
- *`
- *  File: swiftnav.cpp
- *  Desc: Wrapper for to-fix and from-fix functionality of libswiftnav
- *  Auth: Ryan Gariepy
  *
- *  Copyright (c) 2013, Clearpath Robotics, Inc. 
+ *  \file
+ *  \brief Wrapping swiftnav with ROS message types to support LLH->ENU
+ *         and LLH<->ECEF conversions
+ *  \author Ryan Gariepy <rgariepy@clearpathrobotics.com>
+ *
+ *  \copyright Copyright (c) 2013, Clearpath Robotics, Inc. 
+ *
  *  All Rights Reserved
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +31,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
- * Please send comments, questions, or patches to skynet@clearpathrobotics.com 
+ * Please send comments, questions, or patches to code@clearpathrobotics.com 
  *
  */
 
@@ -74,7 +66,6 @@ nav_msgs::Odometry llh_to_enu(sensor_msgs::NavSatFixConstPtr fix_ptr,
                               const std::string& output_tf_frame,
                               double invalid_covariance_value)
 {
-
   // Prepare the appropriate input vector to convert the input latlon
   // to an ECEF triplet.
   double llh[3] = { fix_ptr->latitude * TO_RADIANS,
