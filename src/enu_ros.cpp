@@ -42,7 +42,7 @@
 
 extern "C" {
   // The backend of this node is an included C library called libswiftnav.
-  #include "libswiftnav/include/coord_system.h"
+  #include "coord_system.h"
 }
 
 #include "ros/ros.h"

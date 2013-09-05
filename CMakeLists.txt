@@ -4,8 +4,8 @@ project(enu)
 find_package(catkin REQUIRED COMPONENTS rosconsole roscpp geometry_msgs sensor_msgs nav_msgs)
 
 catkin_package(
-  INCLUDE_DIRS include src/libswiftnav/include
-  LIBRARIES swiftnav
+  INCLUDE_DIRS include
+  LIBRARIES swiftnav enu_ros
   CATKIN_DEPENDS rosconsole roscpp geometry_msgs sensor_msgs nav_msgs
 )
 
@@ -13,11 +13,11 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(include src/libswiftnav/include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(include libswiftnav/include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 # Build the swiftnav library used for coordinate transforms.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} src/libswiftnav/cmake/)
-add_subdirectory(src/libswiftnav)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} libswiftnav/cmake/)
+add_subdirectory(libswiftnav)
 
 ## Declare cpp library
 add_library(enu_ros src/enu_ros.cpp)
@@ -37,17 +37,22 @@ set_target_properties(enu_to_fix PROPERTIES OUTPUT_NAME to_fix PREFIX "")
 ## Install ##
 #############
 
-# Mark executables for installation.
+# Note: libswiftnav takes care of installing its own headers and library.
+
+# Mark node executables for installation.
 install(TARGETS enu_from_fix enu_to_fix
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-# Install swiftnav library.
-install(TARGETS swiftnav
+# Install enu_ros library.
+install(TARGETS enu_ros
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-# 
+# Install enu_ros header.
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
 
 ##########
 ## Docs ##
