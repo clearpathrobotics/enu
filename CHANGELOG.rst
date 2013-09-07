@@ -2,6 +2,10 @@
 Changelog for package enu
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.3 (2013-09-07)
+------------------
+* Remove swiftnav stuff from enu, now that it's a separately released package.
+
 1.0.2 (2013-09-05)
 ------------------
 * Attempt to fix build/install issue with swiftnav headers.
