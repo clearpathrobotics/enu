@@ -1,30 +1,24 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(enu)
 
-find_package(catkin REQUIRED COMPONENTS rosconsole roscpp geometry_msgs sensor_msgs nav_msgs)
+find_package(catkin REQUIRED COMPONENTS rosconsole roscpp geometry_msgs sensor_msgs nav_msgs swiftnav)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES swiftnav enu_ros
-  CATKIN_DEPENDS rosconsole roscpp geometry_msgs sensor_msgs nav_msgs
+  CATKIN_DEPENDS rosconsole roscpp geometry_msgs sensor_msgs nav_msgs swiftnav
 )
 
 ###########
 ## Build ##
 ###########
 
-include_directories(include libswiftnav/include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-
-# Build the swiftnav library used for coordinate transforms.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} libswiftnav/cmake/)
-add_subdirectory(libswiftnav)
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare cpp library
 add_library(enu_ros src/enu_ros.cpp)
 target_link_libraries(enu_ros swiftnav ${catkin_LIBRARIES})
-#add_dependencies(GraftOdometryTopic ${PROJECT_NAME}_gencpp)
 
-## Declare cpp executable
 add_executable(enu_from_fix src/from_fix.cpp)
 target_link_libraries(enu_from_fix enu_ros ${catkin_LIBRARIES})
 set_target_properties(enu_from_fix PROPERTIES OUTPUT_NAME from_fix PREFIX "")
@@ -36,8 +30,6 @@ set_target_properties(enu_to_fix PROPERTIES OUTPUT_NAME to_fix PREFIX "")
 #############
 ## Install ##
 #############
-
-# Note: libswiftnav takes care of installing its own headers and library.
 
 # Mark node executables for installation.
 install(TARGETS enu_from_fix enu_to_fix
