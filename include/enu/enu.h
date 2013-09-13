@@ -2,7 +2,7 @@
  *
  *  \file
  *  \brief Functions for conversion between LLH and ENU coordinates
- *         (given a defined datum) and LLH->ECEF (for datum generation)
+ *         (given a defined datum)
  *  \author Ryan Gariepy <rgariepy@clearpathrobotics.com>         
  *
  *  \copyright Copyright (c) 2013, Clearpath Robotics, Inc. 
@@ -35,51 +35,43 @@
  *
  */
 
-#ifndef INCLUDE_ENU_ENU_ROS_H_
-#define INCLUDE_ENU_ENU_ROS_H_
+#ifndef INCLUDE_ENU_ENU_H_
+#define INCLUDE_ENU_ENU_H_
 
-#include <string>
+#include "ros/message_forward.h"
 
-#include "sensor_msgs/NavSatFix.h"
-#include "nav_msgs/Odometry.h"
+namespace sensor_msgs { ROS_DECLARE_MESSAGE(NavSatFix); }
 
-/**
- * \brief Converts an LLH coordinate into the corresponding ECEF coordinate
- *
- * Primarily intended for datum generation for LLH<->ENU conversion. 
- * \param [in] llh_ptr NavSatFix with a valid latitude, longitude, and altitude
- * \param [out] ecef[3] ECEF array, in metres
- */
-void llh_to_ecef(const sensor_msgs::NavSatFix& llh_ptr, double ecef[3]);
+namespace geometry_msgs { ROS_DECLARE_MESSAGE(Point); }
+
+namespace enu {
 
 /**
  * \brief Converts an LLH coordinate into the corresponding ENU coordinate
  *
- * Requires a datum (in LLH format)
- * \param[in] fix_ptr NavSatFix with a valid latitude, longitude, and altitude
+ * Requires a datum (passed as a NavSatFix)
+ * \param[in] fix NavSatFix with a valid latitude, longitude, and altitude
  * representing the current position
- * \param[in] Datum point in LLH format
- * \param[in] output_tf_frame The string to be used as the frame_id in the output
- * \param[in] invalid_covariance_value The value which represents invalid covariances
- * TODO: Deprecate invalid_covariance_value when it's fully standardized across ROS (rgariepy, 30 Aug 2013)
- * \param[out] ENU of current position relative to datum
+ * \param[in] datum Datum point in LLH format
+ * \param[out] point_ptr ENU of current position relative to datum
  */
-void llh_to_enu(const sensor_msgs::NavSatFixConstPtr fix_ptr,
-                const sensor_msgs::NavSatFix& datum,
-                const std::string& output_tf_frame,
-                double invalid_covariance_value,
-                nav_msgs::Odometry& enu);
+void fix_to_point(const sensor_msgs::NavSatFix& fix,
+                  const sensor_msgs::NavSatFix& datum,
+                  geometry_msgs::Point* point_ptr);
 
 /**
  * \brief Converts an ENU coordinate into the corresponding LLH coordinate
+ *        Note that no population of the NavSatFix header occurs; that is the
+ *        responsibility of the calling function.
  * 
- * Requires a datum (in LLH format)
- * \param [in] Odom_ptr ENU position with respect to datum point
- * \param [in] Datum point in LLH format
- * \param [out] LLH corresponding to ENU + datum combination
+ * Requires a datum (passed as a NavSatFix)
+ * \param [in] point ENU position with respect to datum point
+ * \param [in] datum Datum point in LLH format
+ * \param [out] fix_ptr LLH corresponding to ENU + datum combination
  */
-void enu_to_llh(const nav_msgs::OdometryConstPtr odom_ptr,
-                const sensor_msgs::NavSatFix& datum,
-                sensor_msgs::NavSatFix& llh);
+void point_to_fix(const geometry_msgs::Point& point,
+                  const sensor_msgs::NavSatFix& datum,
+                  sensor_msgs::NavSatFix* fix_ptr);
+}
 
-#endif  // INCLUDE_ENU_ENU_ROS_H_
+#endif  // INCLUDE_ENU_ENU_H_

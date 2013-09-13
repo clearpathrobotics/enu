@@ -41,7 +41,7 @@
 #include "sensor_msgs/NavSatFix.h"
 #include "nav_msgs/Odometry.h"
 
-#include "enu/enu_ros.h"  // ROS wrapper for conversion functions
+#include "enu/enu.h"  // ROS wrapper for conversion functions
 
 static void handle_enu(const nav_msgs::OdometryConstPtr odom_ptr,
                        const sensor_msgs::NavSatFix& datum,
@@ -49,10 +49,20 @@ static void handle_enu(const nav_msgs::OdometryConstPtr odom_ptr,
   // Prepare LLH from ENU coordinates, perform conversion
   // using predefined datum
   // Use input message frame_id and timestamp in output fix message
-  sensor_msgs::NavSatFix fix_msg;
-  enu_to_llh(odom_ptr, datum, fix_msg);
+  sensor_msgs::NavSatFix fix;
+  enu::point_to_fix(odom_ptr->pose.pose.position, datum, &fix);
 
-  pub_fix.publish(fix_msg);
+  fix.header.frame_id = odom_ptr->child_frame_id;
+  fix.header.stamp = odom_ptr->header.stamp;
+
+  // We only need to populate the diagonals of the covariance matrix; the
+  // rest initialize to zero automatically, which is correct as the
+  // dimensions of the state are independent.
+  fix.position_covariance[0] = odom_ptr->pose.covariance[0];
+  fix.position_covariance[4] = odom_ptr->pose.covariance[7];
+  fix.position_covariance[8] = odom_ptr->pose.covariance[14];
+
+  pub_fix.publish(fix);
 }
 
 static void handle_datum(const sensor_msgs::NavSatFixConstPtr datum_ptr,

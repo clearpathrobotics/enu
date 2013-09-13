@@ -5,7 +5,7 @@ find_package(catkin REQUIRED COMPONENTS rosconsole roscpp geometry_msgs sensor_m
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES enu_ros
+  LIBRARIES enu 
   CATKIN_DEPENDS rosconsole roscpp geometry_msgs sensor_msgs nav_msgs
 )
 
@@ -18,15 +18,15 @@ find_library(SWIFTNAV swiftnav)
 include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare cpp library
-add_library(enu_ros src/enu_ros.cpp)
-target_link_libraries(enu_ros ${SWIFTNAV} ${catkin_LIBRARIES})
+add_library(enu src/enu.cpp)
+target_link_libraries(enu ${SWIFTNAV} ${catkin_LIBRARIES})
 
 add_executable(enu_from_fix src/from_fix.cpp)
-target_link_libraries(enu_from_fix enu_ros ${catkin_LIBRARIES})
+target_link_libraries(enu_from_fix enu ${catkin_LIBRARIES})
 set_target_properties(enu_from_fix PROPERTIES OUTPUT_NAME from_fix PREFIX "")
 
 add_executable(enu_to_fix src/to_fix.cpp)
-target_link_libraries(enu_to_fix enu_ros ${catkin_LIBRARIES})
+target_link_libraries(enu_to_fix enu ${catkin_LIBRARIES})
 set_target_properties(enu_to_fix PROPERTIES OUTPUT_NAME to_fix PREFIX "")
 
 #############
@@ -39,7 +39,7 @@ install(TARGETS enu_from_fix enu_to_fix
 )
 
 # Install enu_ros library.
-install(TARGETS enu_ros
+install(TARGETS enu
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
