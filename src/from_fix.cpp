@@ -92,6 +92,12 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
   odom.header.frame_id = output_tf_frame;  // Name of output tf frame
   odom.child_frame_id = fix_ptr->header.frame_id;  // Antenna location
 
+  //Initialize orientation to zero (GPS orientation is N/A)
+  odom.pose.pose.orientation.x = 0;
+  odom.pose.pose.orientation.y = 0;
+  odom.pose.pose.orientation.z = 0;
+  odom.pose.pose.orientation.w = 1;
+
   // We only need to populate the diagonals of the covariance matrix; the
   // rest initialize to zero automatically, which is correct as the
   // dimensions of the state are independent.
@@ -117,6 +123,7 @@ int main(int argc, char **argv) {
   std::string output_tf_frame;
   pnh.param<std::string>("output_frame_id", output_tf_frame, "map");
   double invalid_covariance_value;
+  double lock_altitude;
   pnh.param<double>("invalid_covariance_value", invalid_covariance_value, -1.0);  // -1 is ROS convention.  1e6 is robot_pose_ekf convention
 
   // Initialize publishers, and pass them into the handler for
