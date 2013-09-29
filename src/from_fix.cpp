@@ -75,7 +75,8 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
                        const ros::Publisher& pub_odom,
                        const ros::Publisher& pub_datum,
                        const std::string& output_tf_frame,
-                       const double invalid_covariance_value) {
+                       const double invalid_covariance_value,
+                       const double lock_altitude) {
   static sensor_msgs::NavSatFix datum;
   static bool have_datum = false;
 
@@ -88,6 +89,9 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
   // transformation and an ECEF-formatted datum point
   nav_msgs::Odometry odom;
   enu::fix_to_point(*fix_ptr, datum, &odom.pose.pose.position);
+  if (lock_altitude!=-1) 
+    odom.pose.pose.position.z = lock_altitude;
+
   odom.header.stamp = fix_ptr->header.stamp;
   odom.header.frame_id = output_tf_frame;  // Name of output tf frame
   odom.child_frame_id = fix_ptr->header.frame_id;  // Antenna location
@@ -125,13 +129,14 @@ int main(int argc, char **argv) {
   double invalid_covariance_value;
   double lock_altitude;
   pnh.param<double>("invalid_covariance_value", invalid_covariance_value, -1.0);  // -1 is ROS convention.  1e6 is robot_pose_ekf convention
+  pnh.param<double>("lock_altitude", lock_altitude, -1.0); //if -1 then use ENU altitude, otherwise lock the altitude at the provided value
 
   // Initialize publishers, and pass them into the handler for
   // the subscriber.
   ros::Publisher pub_odom = n.advertise<nav_msgs::Odometry>("enu", 5);
   ros::Publisher pub_datum = n.advertise<sensor_msgs::NavSatFix>("enu_datum", 5, true);
   ros::Subscriber sub = n.subscribe<sensor_msgs::NavSatFix>("fix", 5,
-      boost::bind(handle_fix, _1, pub_odom, pub_datum, output_tf_frame, invalid_covariance_value));
+      boost::bind(handle_fix, _1, pub_odom, pub_datum, output_tf_frame, invalid_covariance_value, lock_altitude));
 
   ros::spin();
   return 0;
