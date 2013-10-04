@@ -2,6 +2,15 @@
 Changelog for package enu
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2013-10-03)
+------------------
+* Specify minimum version for swiftnav dependency.
+* Add several key configuration parameters in support of the outdoor Husky EKF.
+* adding the ability to scale the gps covariance
+* adding param to lock altitude output to a rosparam set number
+* added provision to initialize odom orientation at a mathematically viable quaternion orientation
+* Clean up and simplify code API.
+
 1.0.3 (2013-09-07)
 ------------------
 * Remove swiftnav stuff from enu, now that it's a separately released package.
