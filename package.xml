@@ -40,7 +40,7 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
-  <run_depend>swiftnav</run_depend>
+  <run_depend version_gte="0.0.4">swiftnav</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
