@@ -40,7 +40,7 @@
 #include "ros/ros.h"
 #include "sensor_msgs/NavSatFix.h"
 #include "nav_msgs/Odometry.h"
-
+#include "enu/ToENU.h"
 #include "enu/enu.h"  // ROS wrapper for conversion functions
 
 
@@ -119,6 +119,10 @@ static void handle_fix(const sensor_msgs::NavSatFixConstPtr fix_ptr,
   pub_odom.publish(odom);
 }
 
+bool toENUService(const enu::ToENU::Request& req, enu::ToENU::Response& resp) {
+  enu::fix_to_point(req.llh, req.datum, &(resp.enu));
+  return true;
+}
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "from_fix");
@@ -140,6 +144,7 @@ int main(int argc, char **argv) {
   ros::Publisher pub_datum = n.advertise<sensor_msgs::NavSatFix>("enu_datum", 5, true);
   ros::Subscriber sub = n.subscribe<sensor_msgs::NavSatFix>("fix", 5,
       boost::bind(handle_fix, _1, pub_odom, pub_datum, output_tf_frame, invalid_covariance_value,scale_covariance, lock_altitude));
+  ros::ServiceServer srv = n.advertiseService<enu::ToENU::Request, enu::ToENU::Response> ("ToENU", toENUService);
 
   ros::spin();
   return 0;

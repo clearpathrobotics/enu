@@ -3,6 +3,15 @@ project(enu)
 
 find_package(catkin REQUIRED COMPONENTS rosconsole roscpp geometry_msgs sensor_msgs nav_msgs)
 
+add_service_files(
+  FILES
+  ToENU.srv
+)
+
+generate_messages(DEPENDENCIES sensor_msgs geometry_msgs)
+
+
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES enu 
