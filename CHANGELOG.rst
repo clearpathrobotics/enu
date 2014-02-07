@@ -2,8 +2,8 @@
 Changelog for package enu
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2014-02-07)
+------------------
 * Add a new trivial node which provides just the two conversion services.
 * Remove cruft from package.xml
 * Contributors: Mike Purvis, Prasenjit Mukherjee
