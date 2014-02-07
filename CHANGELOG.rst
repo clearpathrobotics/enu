@@ -2,6 +2,12 @@
 Changelog for package enu
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add a new trivial node which provides just the two conversion services.
+* Remove cruft from package.xml
+* Contributors: Mike Purvis, Prasenjit Mukherjee
+
 1.1.0 (2013-10-03)
 ------------------
 * Specify minimum version for swiftnav dependency.
