@@ -33,6 +33,7 @@ target_link_libraries(enu ${SWIFTNAV} ${catkin_LIBRARIES})
 add_executable(enu_from_fix src/from_fix.cpp)
 target_link_libraries(enu_from_fix enu ${catkin_LIBRARIES})
 set_target_properties(enu_from_fix PROPERTIES OUTPUT_NAME from_fix PREFIX "")
+add_dependencies(enu_from_fix enu_gencpp)
 
 add_executable(enu_to_fix src/to_fix.cpp)
 target_link_libraries(enu_to_fix enu ${catkin_LIBRARIES})
