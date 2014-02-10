@@ -2,8 +2,8 @@
 Changelog for package enu
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.1 (2014-02-10)
+------------------
 * Add service dep for enu_from_fix.
 * Contributors: Mike Purvis
 
