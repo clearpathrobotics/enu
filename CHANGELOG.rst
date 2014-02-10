@@ -2,6 +2,11 @@
 Changelog for package enu
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add service dep for enu_from_fix.
+* Contributors: Mike Purvis
+
 1.2.0 (2014-02-07)
 ------------------
 * Add a new trivial node which provides just the two conversion services.
