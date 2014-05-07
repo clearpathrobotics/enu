@@ -20,6 +20,11 @@ catkin_package(
 
 find_library(SWIFTNAV swiftnav)
 
+find_library(LAPACK lapack)
+if (NOT LAPACK)
+  set(LAPACK "/usr/lib/lapack/liblapack.so.3gf")
+endif()
+
 ###########
 ## Build ##
 ###########
@@ -28,7 +33,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare cpp library
 add_library(enu src/enu.cpp)
-target_link_libraries(enu ${SWIFTNAV} ${catkin_LIBRARIES})
+target_link_libraries(enu ${SWIFTNAV} ${LAPACK} ${catkin_LIBRARIES})
 
 add_executable(enu_from_fix src/from_fix.cpp)
 target_link_libraries(enu_from_fix enu ${catkin_LIBRARIES})
