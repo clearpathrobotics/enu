@@ -2,6 +2,11 @@
 Changelog for package enu
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.2 (2014-05-07)
+------------------
+* Define _xerbla logging function to fix regression from swiftnav.
+* Contributors: Mike Purvis
+
 1.2.1 (2014-02-10)
 ------------------
 * Add service dep for enu_from_fix.

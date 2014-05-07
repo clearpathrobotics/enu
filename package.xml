@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>enu</name>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <description>enu</description>
   <maintainer email="mpurvis@clearpathrobotics.com">Mike Purvis</maintainer>
   <license>BSD</license>
