@@ -51,6 +51,12 @@ extern "C" {
 #define TO_RADIANS (M_PI/180)
 #define TO_DEGREES (180/M_PI)
 
+
+extern "C" int xerbla_(char *srname, int *info)
+{
+  ROS_ERROR("On entry to %6s, parameter number %2i had an illegal value", srname, *info);
+}
+
 namespace enu {
 
 static void fix_to_ecef(const sensor_msgs::NavSatFix& fix, double ecef[3]) {
